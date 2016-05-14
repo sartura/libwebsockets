@@ -236,13 +236,17 @@ struct lws_polarssl_context {
 };
 typedef struct lws_polarssl_context SSL_CTX;
 typedef ssl_context SSL;
-#else
-#if defined(LWS_USE_MBEDTLS)
+#elif defined(LWS_USE_MBEDTLS)
 #include <mbedtls/ssl.h>
+typedef struct lws_polarssl_context {
+	mbedtls_x509_crt ca;
+	mbedtls_x509_crt certificate;
+	mbedtls_pk_context key;
+} SSL_CTX;
+typedef mbedtls_ssl_context SSL;
 #else
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#endif /* not USE_MBEDTLS */
 #endif /* not USE_POLARSSL */
 #endif /* not USE_WOLFSSL */
 #endif

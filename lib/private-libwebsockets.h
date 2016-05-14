@@ -212,6 +212,10 @@ static inline int compatible_close(int fd) { return close(fd); }
 #include <mbedtls/md5.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/ecdh.h>
+#include <mbedtls/net.h>
+#define SSL_ERROR_WANT_READ MBEDTLS_ERR_SSL_WANT_READ
+#define SSL_ERROR_WANT_WRITE MBEDTLS_ERR_SSL_WANT_WRITE
+#define OPENSSL_VERSION_NUMBER  0x10002000L
 #else
 #include <openssl/ssl.h>
 #include <openssl/evp.h>

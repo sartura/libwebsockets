@@ -36,6 +36,7 @@ lws_ssl_client_bio_create(struct lws *wsi)
 	return 0;
 #else
 #if defined(LWS_USE_MBEDTLS)
+	return 0;
 #else
 	struct lws_context *context = wsi->context;
 #if defined(CYASSL_SNI_HOST_NAME) || defined(WOLFSSL_SNI_HOST_NAME) || defined(SSL_CTRL_SET_TLSEXT_HOSTNAME)
@@ -296,6 +297,7 @@ int lws_context_init_client_ssl(struct lws_context_creation_info *info,
 	return 0;
 #else
 #if defined(LWS_USE_MBEDTLS)
+	return 0;
 #else
 	SSL_METHOD *method;
 	struct lws wsi;
