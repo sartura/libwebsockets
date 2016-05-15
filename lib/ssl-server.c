@@ -294,6 +294,55 @@ lws_context_init_server_ssl(struct lws_context_creation_info *info,
 #else
 #if defined(LWS_USE_MBEDTLS)
 	lwsl_notice(" Compiled with mbedTLS support\n");
+
+	vhost->ssl_ctx = lws_zalloc(sizeof (*vhost->ssl_ctx));
+
+	/* Load the trusted CA */
+
+	if (info->ssl_ca_filepath) {
+		n = mbedtls_x509_crt_parse_file(&vhost->ssl_ctx->ca,
+					info->ssl_ca_filepath);
+
+		if (n < 0) {
+//			error_strerror(ret, errorbuf, sizeof(errorbuf));
+			lwsl_err("%s: Failed to load ca cert\n", __func__);
+			return -1;
+		}
+	}
+
+	/* Load our cert */
+
+	if (info->ssl_cert_filepath) {
+		n = mbedtls_x509_crt_parse_file(&vhost->ssl_ctx->certificate,
+					info->ssl_cert_filepath);
+
+		if (n < 0) {
+//			error_strerror(ret, errorbuf, sizeof(errorbuf));
+			lwsl_err("%s: Failed to load cert\n", __func__);
+			return -1;
+		}
+	}
+
+	/* Load cert private key */
+
+	if (info->ssl_private_key_filepath) {
+		mbedtls_pk_init(&vhost->ssl_ctx->key);
+		n = mbedtls_pk_parse_keyfile(&vhost->ssl_ctx->key, info->ssl_private_key_filepath,
+				     info->ssl_private_key_password);
+
+		if (!n && !mbedtls_pk_can_do(&vhost->ssl_ctx->key, MBEDTLS_PK_RSA))
+			n = MBEDTLS_ERR_PK_TYPE_MISMATCH;
+
+		if (n)
+			mbedtls_pk_free(&vhost->ssl_ctx->key);
+
+		if (n) {
+			//error_strerror(ret, errorbuf, sizeof(errorbuf));
+			lwsl_err("%s: error reading private key\n", __func__);
+
+			return -1;
+		}
+	}
 #else
 
 	/*

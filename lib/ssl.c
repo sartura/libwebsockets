@@ -509,12 +509,14 @@ lws_server_socket_service_ssl(struct lws *wsi, lws_sockfd_type accept_fd)
 
 		mbedtls_ssl_config_init(conf);
 
+		mbedtls_ssl_config_defaults(conf, MBEDTLS_SSL_IS_SERVER, MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
+
 		mbedtls_ssl_conf_endpoint(conf, MBEDTLS_SSL_IS_SERVER);
 		mbedtls_ssl_conf_authmode(conf, MBEDTLS_SSL_VERIFY_OPTIONAL); // TODO
 		mbedtls_ssl_conf_rng(conf, urandom_bytes, NULL);
 		mbedtls_ssl_conf_dbg(conf, mbdtls_debug, NULL);
 
-		mbedtls_ssl_conf_ciphersuites(conf, ciphers);
+		if (0) mbedtls_ssl_conf_ciphersuites(conf, ciphers);
 
 		mbedtls_ssl_init(wsi->ssl);
 
@@ -675,18 +677,19 @@ lws_server_socket_service_ssl(struct lws *wsi, lws_sockfd_type accept_fd)
 		/* normal SSL connection processing path */
 #if defined(LWS_USE_POLARSSL)
 		n = ssl_handshake(wsi->ssl);
-#else
-#if defined(LWS_USE_MBEDTLS)
-		lwsl_err("service wsi ssl %p sock %d\n", wsi->ssl, wsi->sock);
+#elif defined(LWS_USE_MBEDTLS)
 		n = mbedtls_ssl_handshake(wsi->ssl);
 #else
 		n = SSL_accept(wsi->ssl);
 #endif
-#endif
 		lws_latency(context, wsi,
 			"SSL_accept LWSCM_SSL_ACK_PENDING\n", n, n == 1);
 
+#if defined(LWS_USE_POLARSSL) || defined(LWS_USE_MBEDTLS)
+		if (n == 0)
+#else
 		if (n == 1)
+#endif
 			goto accepted;
 
 		m = lws_ssl_get_error(wsi, n);
@@ -710,8 +713,8 @@ go_again:
 
 			break;
 		}
-		lwsl_err("SSL_accept failed skt %u: %s\n",
-			   wsi->sock, ERR_error_string(m, NULL));
+		lwsl_err("SSL_accept failed skt %u: %d %s\n",
+			   wsi->sock, m, ERR_error_string(m, NULL));
 
 		lws_ssl_elaborate_error();
 		goto fail;
