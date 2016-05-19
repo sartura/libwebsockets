@@ -1,0 +1,93 @@
+<html>
+ <head>
+  <script src="lwsgs.js"></script>
+  </head>
+  <body>
+  <script>
+   function check_pw_match()
+   {
+	var en_login = 1, en_forgot = 1;
+
+	if (document.getElementById('password').value.length &&
+	    document.getElementById('password').value.length < 8) {
+		en_login = 0;
+		document.getElementById('pw1').innerHTML = "Need 8 chars";
+	} else
+		document.getElementById('pw1').innerHTML = "";
+
+	if (!document.getElementById('username').value ||
+	    !document.getElementById('password').value)
+		en_login = 0;
+
+	if (!document.getElementById('username').value)
+		en_forgot = 0;
+
+	document.getElementById('login').disabled = !en_login;
+ 	document.getElementById('forgot').disabled = !en_forgot;
+  }
+
+	function open_registration()
+	{
+		var arg = { };
+		var win = window.open("generic-sessions-register-example.html",
+			       arg, 'width=500,height=250');
+		win.focus();
+	}
+
+  </script>
+    <table width="100%">
+     <tr>
+      <td align=left>
+       <img src="lwsws-logo.png">
+      </td>
+      <td>
+        Example website with top</br>session management ribbon
+      </td>
+      <td>
+       <div id="dlogin" style="display:none">
+        <form action="login" method="post">
+         <input type="hidden" name="admin" value="needadmin/admin-login.html">
+         <input type="hidden" name="good" value="index.html">
+         <input type="hidden" name="bad" value="failed-login.html">
+	 <table width="99%">
+          <tr>
+           <td>User Name</br>
+            <input type="text" size="10" id="username" name="username" oninput="check_pw_match()"></td>
+           <td>Password</br>
+            <input type="password" id="password" size="10" name="password" oninput="check_pw_match()"><div id="pw1"></div></td>
+	   <td><input type="submit" id="login" name="login" value="Login" style="margin: 8px; padding: 8px; font-weight=bold;">
+      &nbsp;<input type="submit" id="forgot" name="forgot" value="Forgot password" style="margin: 4px; padding: 4px"></td>
+           <td><a href="#" onclick="open_registration()">sign up</a></td>
+          </tr>
+         </table>
+        </form>
+       </div>
+  
+       <div id="dlogout" style="display:none">
+        <form action="logout" method="post">
+         <input type="hidden" name="good" value="index.html">
+         <table width="99%">
+          <tr>
+ 	   <td>Logged in as <span id="curuser"></span></td>
+           <td><input type="submit" name="logout" value="Logout" style="margin: 4px; padding: 4px"></td>
+          </tr>
+         </table>
+        </form>
+       </div>
+      </td>
+     </tr>
+    </table>
+   </form>
+  <script>
+	check_pw_match();
+	if (lwsgs_user)
+		document.getElementById("curuser").innerHTML = "Logged in as " + san(lwsgs_user) + "</br>";
+
+	if (lwsgs_user === "")
+		document.getElementById("dlogin").style.display = "inline";
+	else
+		document.getElementById("dlogout").style.display = "inline";	
+  </script>
+ </body>
+</html>
+
